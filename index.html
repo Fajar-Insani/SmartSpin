@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Class Spinner & Group Maker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+    <h1>🎡 Class Group Spinner</h1>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('dbTab')">📁 Database Siswa</button>
+        <button class="tab-btn" onclick="switchTab('spinTab')">🎯 Manual Wheel Spin</button>
+        <button class="tab-btn" onclick="switchTab('advanceTab')">⚡ Advance Instant Spin</button>
+    </div>
+
+    <!-- TAB 1: DATABASE SISWA -->
+<div id="dbTab" class="tab-content active">
+    <div class="card">
+        <h3 id="formTitle">Tambah / Edit Data Siswa</h3>
+        <form id="studentForm" class="form-row">
+            <!-- Hidden input untuk ID siswa saat edit -->
+            <input type="hidden" id="editStudentId" value="">
+
+            <input type="text" id="nameInput" placeholder="Nama Lengkap Siswa" required>
+            <select id="genderInput">
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+            </select>
+            <select id="scoreInput">
+                <option value="A">Nilai A (Easy / Proaktif)</option>
+                <option value="B">Nilai B (Average / Standar)</option>
+                <option value="C">Nilai C (Hardcore / Perhatian Ekstra)</option>
+            </select>
+            <button type="submit" id="submitBtn" class="btn btn-success">+ Tambah</button>
+            <button type="button" id="cancelEditBtn" class="btn btn-danger" style="display:none;" onclick="cancelEdit()">Batal Edit</button>
+        </form>
+
+        <div style="margin-top: 15px;" class="form-row">
+            <button class="btn btn-warning" onclick="exportJSON()">📥 Export File Database (.json)</button>
+            <button class="btn btn-warning" onclick="document.getElementById('importFile').click()">📤 Import File Database</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+            <button class="btn btn-danger" onclick="clearAllData()">🗑️ Hapus Semua Data</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Daftar Siswa (<span id="totalStudentsCount">0</span> Siswa)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Gender</th>
+                    <th>Kategori Kerjasama</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <!-- TAB 2: MANUAL WHEEL SPIN -->
+    <div id="spinTab" class="tab-content">
+        <div class="card">
+            <div class="form-row" style="justify-content: center; align-items: center; gap: 15px;">
+                <div>
+                    <label>Jumlah Kelompok: </label>
+                    <input type="number" id="wheelGroupCount" min="1" value="3" style="width: 70px;">
+                </div>
+                <div>
+                    <label>Urutan Spin: </label>
+                    <select id="spinOrder">
+                        <option value="genderFirst">Laki-laki Dulu → Perempuan</option>
+                        <option value="randomMix">Acak Bebas (L & P Campur)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="initWheelMode()">Setup / Reset Spinner</button>
+            </div>
+            
+            <div class="status-box" id="wheelStatus">
+                Siap memutar roda!
+            </div>
+
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="350" height="350"></canvas>
+            </div>
+
+            <div class="controls-panel">
+                <button class="btn btn-success" id="spinBtn" onclick="spinWheelAuto()">🎰 Spin Otomatis</button>
+                <p style="font-size: 12px; color: #64748b; width: 100%; text-align: center;">
+                    💡 Tips: Kamu bisa memutar roda ke kanan maupun ke kiri pakai sentuhan jari atau mouse!
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Hasil Kelompok (Wheel Spin)</h3>
+            <p style="font-size: 12px; color: #64748b; text-align: center; margin-bottom: 15px;">
+                *Nama siswa di bawah dapat langsung di-edit jika guru berkehendak lain.
+            </p>
+            
+            <div class="form-row" style="margin-bottom: 15px; justify-content: center;">
+                <input type="text" id="wheelReportTitle" placeholder="Masukkan Judul (misal: Kelompok Agama 12.10)">
+                <button class="btn btn-success" onclick="downloadGroupReport('wheelGroupResults', 'wheelReportTitle')">📸 Simpan Hasil (Gambar)</button>
+            </div>
+
+            <div class="groups-grid" id="wheelGroupResults"></div>
+        </div>
+    </div>
+
+    <!-- TAB 3: ADVANCE INSTANT SPIN -->
+    <div id="advanceTab" class="tab-content">
+        <div class="card">
+            <div class="controls-panel">
+                <label>Jumlah Kelompok: </label>
+                <input type="number" id="advGroupCount" min="1" value="3" style="width: 80px;">
+                
+                <button id="justiceBtn" class="btn justice-btn" onclick="toggleJustice()">
+                    ⚖️ Justice Option: <span id="justiceStatus">OFF</span>
+                </button>
+
+                <button class="btn btn-success" onclick="runAdvanceSpin()">⚡ Spin Instan Sekarang</button>
+            </div>
+            <p style="font-size: 12px; color: #64748b; text-align: center;">
+                *Advance spin membagi siswa L & P secara seimbang. Fitur **Justice Option** menyebarkan Nilai A, B, & C secara adil dan memberikan penyeimbang jika ada kelompok dengan 2 anak Easy.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Hasil Kelompok (Advance Spin)</h3>
+            <p style="font-size: 12px; color: #64748b; text-align: center; margin-bottom: 15px;">
+                *Nama siswa di bawah dapat langsung di-edit jika guru berkehendak lain.
+            </p>
+
+            <div class="form-row" style="margin-bottom: 15px; justify-content: center;">
+                <input type="text" id="advReportTitle" placeholder="Masukkan Judul (misal: Kelompok Agama 12.10)">
+                <button class="btn btn-success" onclick="downloadGroupReport('advGroupResults', 'advReportTitle')">📸 Simpan Hasil (Gambar)</button>
+            </div>
+
+            <div class="groups-grid" id="advGroupResults"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
