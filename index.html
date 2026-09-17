@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Class Spinner & Group Maker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="header-badge">
+            <span class="pulse-dot"></span> Smart Grouping Platform
+        </div>
+        <div class="logo-title">
+            <h1>SMART CLASS SPINNER</h1>
+        </div>
+        <p class="header-subtitle">Pembagi kelompok kelas Modern, Adil, & Cepat</p>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('homeTab')">🏠 Utama</button>
+        <button class="tab-btn" onclick="switchTab('dbTab')">📁 Data Siswa</button>
+        <button class="tab-btn" onclick="switchTab('spinTab')">🎯 Wheel Spin</button>
+        <button class="tab-btn" onclick="switchTab('advanceTab')">⚡ Advance Spin</button>
+    </nav>
+
+    <!-- TAB 0: MAIN PAGE / HALAMAN UTAMA -->
+    <div id="homeTab" class="tab-content active">
+        <div class="card hero-card">
+            <h2>Selamat Datang di Smart Class Spinner! 👋</h2>
+            <p>Solusi pembagian kelompok kelas yang praktis, cepat, interaktif, dan adil dengan fitur <b>Justice Option</b>.</p>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-num" id="statTotal">0</span>
+                    <span class="stat-label">Total Siswa</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num" id="statBoys">0</span>
+                    <span class="stat-label">Laki-laki</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-num" id="statGirls">0</span>
+                    <span class="stat-label">Perempuan</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📜 Riwayat Pembaruan Sistem (Changelog)</h3>
+            <div class="changelog-list">
+                <div class="changelog-item">
+                    <div class="changelog-date">📅 17 September 2026 (V1.2)</div>
+                    <div class="changelog-title">Major UI/UX Mobile Redesign</div>
+                    <ul>
+                        <li>Penambahan Tab Halaman Utama (Main Page) & Statistik Siswa.</li>
+                        <li>Desain ulang antarmuka serba responsif (Mobile First Layout).</li>
+                        <li>Pembaruan tampilan form, kartu siswa, dan navigasi aplikasi.</li>
+                    </ul>
+                </div>
+                <div class="changelog-item">
+                    <div class="changelog-date">📅 16 September 2026 (Vx1.0)</div>
+                    <div class="changelog-title">Pembaruan Algoritma & Fitur Gambar</div>
+                    <ul>
+                        <li>Penerapan 3 Kategori Kerjasama (Grade A: Easy, Grade B: Average, Grade C: Hardcore).</li>
+                        <li>Algoritma Justice Option Global dengan fitur kompensasi otomatis.</li>
+                        <li>Roda Spin 2 Arah (Swipe Gesture) & Durasi Otomatis Acak (2-10s).</li>
+                        <li>Fitur Simpan Laporan Hasil Kelompok menjadi Gambar PNG.</li>
+                        <li>Fitur Edit Data Siswa langsung di tabel database.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 1: DATABASE SISWA -->
+    <div id="dbTab" class="tab-content">
+        <div class="card">
+            <h3 id="formTitle">Tambah / Edit Data Siswa</h3>
+            <form id="studentForm" class="form-grid">
+                <input type="hidden" id="editStudentId" value="">
+                
+                <div class="input-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="nameInput" placeholder="Masukkan nama siswa" required>
+                </div>
+
+                <div class="input-group-row">
+                    <div class="input-group">
+                        <label>Gender</label>
+                        <select id="genderInput">
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Kerjasama</label>
+                        <select id="scoreInput">
+                            <option value="A">Grade A (Easy)</option>
+                            <option value="B">Grade B (Average)</option>
+                            <option value="C">Grade C (Hardcore)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submitBtn" class="btn btn-primary">+ Tambah Siswa</button>
+                    <button type="button" id="cancelEditBtn" class="btn btn-secondary" style="display:none;" onclick="cancelEdit()">Batal</button>
+                </div>
+            </form>
+
+            <div class="database-tools">
+                <button class="btn btn-outline" onclick="exportJSON()">📥 Export JSON</button>
+                <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📤 Import JSON</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+                <button class="btn btn-danger-outline" onclick="clearAllData()">🗑️ Clear All</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Daftar Siswa (<span id="totalStudentsCount">0</span> Siswa)</h3>
+            <div id="studentListContainer" class="student-list-container">
+                <!-- Dynamic Mobile Responsive List / Table -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: MANUAL WHEEL SPIN -->
+    <div id="spinTab" class="tab-content">
+        <div class="card">
+            <div class="form-grid-2col">
+                <div class="input-group">
+                    <label>Jumlah Kelompok</label>
+                    <input type="number" id="wheelGroupCount" min="1" value="3">
+                </div>
+                <div class="input-group">
+                    <label>Urutan Spin</label>
+                    <select id="spinOrder">
+                        <option value="genderFirst">Laki-laki Dulu → Perempuan</option>
+                        <option value="randomMix">Acak Bebas (L & P Campur)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="btn btn-outline full-width" style="margin-top: 10px;" onclick="initWheelMode()">🔄 Reset / Setup Spinner</button>
+
+            <div class="status-box" id="wheelStatus">
+                Siap memutar roda!
+            </div>
+
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="350" height="350"></canvas>
+            </div>
+
+            <div class="controls-panel">
+                <button class="btn btn-primary full-width" id="spinBtn" onclick="spinWheelAuto()">🎰 Spin Otomatis</button>
+                <p class="hint-text">
+                    💡 Tips: Geser/swipe roda dengan jari atau mouse untuk memutar manual!
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Hasil Kelompok (Wheel Spin)</h3>
+            <div class="export-box">
+                <input type="text" id="wheelReportTitle" placeholder="Judul Foto (mis: Kelompok Agama 12.10)">
+                <button class="btn btn-success" onclick="downloadGroupReport('wheelGroupResults', 'wheelReportTitle')">📸 Simpan Gambar</button>
+            </div>
+
+            <div class="groups-grid" id="wheelGroupResults"></div>
+        </div>
+    </div>
+
+    <!-- TAB 3: ADVANCE INSTANT SPIN -->
+    <div id="advanceTab" class="tab-content">
+        <div class="card">
+            <div class="form-grid-2col">
+                <div class="input-group">
+                    <label>Jumlah Kelompok</label>
+                    <input type="number" id="advGroupCount" min="1" value="3">
+                </div>
+                <div class="input-group">
+                    <label>Justice Option</label>
+                    <button id="justiceBtn" class="btn justice-btn" onclick="toggleJustice()">
+                        ⚖️ Mode: <span id="justiceStatus">OFF</span>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary full-width" style="margin-top: 15px;" onclick="runAdvanceSpin()">⚡ Spin Instan Sekarang</button>
+            <p class="hint-text" style="margin-top: 10px;">
+                *Justice Option membagi siswa L & P seimbang, menyebarkan Grade A/B/C adil, dan memberikan penyeimbang otomatis.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Hasil Kelompok (Advance Spin)</h3>
+            <div class="export-box">
+                <input type="text" id="advReportTitle" placeholder="Judul Foto (mis: Kelompok Agama 12.10)">
+                <button class="btn btn-success" onclick="downloadGroupReport('advGroupResults', 'advReportTitle')">📸 Simpan Gambar</button>
+            </div>
+
+            <div class="groups-grid" id="advGroupResults"></div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <span class="version-badge">v1.2.0</span>
+                <span class="footer-text">Smart Class Spinner &copy; 2026</span>
+            </div>
+            <div class="footer-status">
+                <span class="status-indicator"></span> System Active & Ready
+            </div>
+        </div>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
+</html>
